@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/eddie/.config/superpowers/worktrees/development/plan-implementation/**)",
+      "Bash(npm install:*)",
+      "Bash(cd ~/.config/superpowers/worktrees/development/plan-implementation && npx vitest run 2>&1)",
+      "Bash(npm run:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(cd \"C:/Users/eddie/development\" && npx vitest run 2>&1 | tail -20)",
+      "Bash(cd \"C:/Users/eddie/development\" && npx tsc --noEmit 2>&1 | head -30)",
+      "Bash(cd \"C:/Users/eddie/development\" && node -e \"const pkg = require\\('./package.json'\\); console.log\\(JSON.stringify\\(pkg.scripts, null, 2\\)\\)\")",
+      "Bash(cd C:/Users/eddie/development && npx tsc --noEmit 2>&1)",
+      "Bash(node -e \"console.log\\(\\(0.0555 * 100\\).toFixed\\(1\\)\\); console.log\\(0.0555 * 100\\); console.log\\(Math.round\\(0.0555 * 1000\\) / 10\\)\")",
+      "Bash(npx tsc:*)",
+      "Bash(cd C:/Users/eddie/development && rm -rf .next && npx tsc --noEmit 2>&1)",
+      "Bash(cd C:/Users/eddie/development && npx vitest run 2>&1)",
+      "Bash(ls C:/Users/eddie/development/src/app/\\\\\\(dashboard\\\\\\)/)",
+      "Bash(mkdir -p \"C:/Users/eddie/development/src/app/\\(dashboard\\)/dashboard\" && git -C \"C:/Users/eddie/development\" mv \"src/app/\\(dashboard\\)/page.tsx\" \"src/app/\\(dashboard\\)/dashboard/page.tsx\")"
+    ]
+  }
+}
