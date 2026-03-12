@@ -1,6 +1,8 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+const PUBLIC_ROUTES = ['/', '/login']
+
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
@@ -30,13 +32,13 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   if (!user) {
-    if (pathname !== '/login') {
+    if (!PUBLIC_ROUTES.includes(pathname)) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
     return supabaseResponse
   }
 
-  // User is authenticated — check onboarding
+  // User authenticated — check onboarding
   const { data: org } = await supabase
     .from('organizations')
     .select('onboarding_completed')
@@ -52,7 +54,7 @@ export async function middleware(request: NextRequest) {
 
   // Onboarding complete — redirect away from auth pages
   if (pathname === '/login' || pathname === '/onboarding') {
-    return NextResponse.redirect(new URL('/', request.url))
+    return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
   return supabaseResponse

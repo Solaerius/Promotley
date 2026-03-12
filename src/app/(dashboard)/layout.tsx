@@ -36,7 +36,7 @@ export default async function DashboardLayout({
   }
 
   const navLinks = [
-    { href: '/', label: 'Översikt' },
+    { href: '/dashboard', label: 'Översikt' },
     { href: '/chat', label: 'AI-chatt' },
     { href: '/calendar', label: 'Kalender' },
     { href: '/settings', label: 'Inställningar' },
