@@ -143,8 +143,8 @@ describe('PATCH /api/org', () => {
     })
     const res = await PATCH(req as any)
     expect(res.status).toBe(200)
-    // Verify upsert was NOT called with credits_remaining
-    const upsertCall = (mock.upsert as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]
-    expect(upsertCall).not.toHaveProperty('credits_remaining')
+    // Verify update was NOT called with credits_remaining
+    const updateCall = (mock.update as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]
+    expect(updateCall).not.toHaveProperty('credits_remaining')
   })
 })

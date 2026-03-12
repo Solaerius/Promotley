@@ -70,13 +70,30 @@ export async function PATCH(request: NextRequest) {
     }
   }
 
-  const { data: org, error } = await supabase
+  let { data: org, error } = await supabase
     .from('organizations')
-    .upsert({ user_id: user.id, ...updates }, { onConflict: 'user_id' })
+    .update(updates)
+    .eq('user_id', user.id)
     .select()
     .single()
 
-  if (error) {
+  if (error?.code === 'PGRST116') {
+    // No org row yet — create it
+    const { data: newOrg, error: insertError } = await supabase
+      .from('organizations')
+      .insert({ user_id: user.id, ...updates })
+      .select()
+      .single()
+
+    if (insertError) {
+      console.error('PATCH /api/org insert error:', insertError)
+      return NextResponse.json(
+        { error: 'Kunde inte skapa organisation' },
+        { status: 500 }
+      )
+    }
+    org = newOrg
+  } else if (error) {
     console.error('PATCH /api/org error:', error)
     return NextResponse.json(
       { error: 'Kunde inte uppdatera organisation' },
