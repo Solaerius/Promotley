@@ -196,6 +196,13 @@ export default function HomePage() {
         .glow-orb {
           animation: pulseGlow 4s ease-in-out infinite;
         }
+        .footer-link {
+          color: rgba(255,255,255,0.35);
+          font-size: 0.8rem;
+          text-decoration: none;
+          transition: color 0.2s;
+        }
+        .footer-link:hover { color: rgba(255,255,255,0.7); }
         .section-tag {
           display: inline-block;
           background: rgba(220,38,38,0.15);
@@ -343,8 +350,8 @@ export default function HomePage() {
                       ))}
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.35rem' }}>
-                      {['M', 'T', 'O', 'T', 'F', 'L', 'S'].map(d => (
-                        <span key={d} style={{ color: 'rgba(255,255,255,0.25)', fontSize: '0.65rem', flex: 1, textAlign: 'center' }}>{d}</span>
+                      {['M', 'T', 'O', 'T', 'F', 'L', 'S'].map((d, i) => (
+                        <span key={i} style={{ color: 'rgba(255,255,255,0.25)', fontSize: '0.65rem', flex: 1, textAlign: 'center' }}>{d}</span>
                       ))}
                     </div>
                   </div>
@@ -530,10 +537,7 @@ export default function HomePage() {
             </div>
             <div style={{ display: 'flex', gap: '1.25rem' }}>
               {['Villkor', 'Integritet', 'Kontakt'].map(link => (
-                <a key={link} href="#" style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.8rem', textDecoration: 'none', transition: 'color 0.2s' }}
-                   onMouseOver={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.7)')}
-                   onMouseOut={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.35)')}
-                >{link}</a>
+                <a key={link} href="#" className="footer-link">{link}</a>
               ))}
             </div>
           </div>

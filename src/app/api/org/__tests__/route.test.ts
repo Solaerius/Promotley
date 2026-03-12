@@ -29,6 +29,7 @@ function makeSupabaseMock(overrides: Record<string, unknown> = {}) {
     single: vi.fn().mockResolvedValue({ data: null, error: null }),
     insert: vi.fn().mockReturnThis(),
     update: vi.fn().mockReturnThis(),
+    upsert: vi.fn().mockReturnThis(),
     ...overrides,
   }
   // Ensure chained methods return the mock itself for fluent chaining
@@ -37,6 +38,7 @@ function makeSupabaseMock(overrides: Record<string, unknown> = {}) {
   ;(mock.eq as ReturnType<typeof vi.fn>).mockReturnValue(mock)
   ;(mock.insert as ReturnType<typeof vi.fn>).mockReturnValue(mock)
   ;(mock.update as ReturnType<typeof vi.fn>).mockReturnValue(mock)
+  ;(mock.upsert as ReturnType<typeof vi.fn>).mockReturnValue(mock)
   return mock
 }
 
@@ -141,8 +143,8 @@ describe('PATCH /api/org', () => {
     })
     const res = await PATCH(req as any)
     expect(res.status).toBe(200)
-    // Verify update was NOT called with credits_remaining
-    const updateCall = (mock.update as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]
-    expect(updateCall).not.toHaveProperty('credits_remaining')
+    // Verify upsert was NOT called with credits_remaining
+    const upsertCall = (mock.upsert as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]
+    expect(upsertCall).not.toHaveProperty('credits_remaining')
   })
 })

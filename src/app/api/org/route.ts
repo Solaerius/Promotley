@@ -72,12 +72,12 @@ export async function PATCH(request: NextRequest) {
 
   const { data: org, error } = await supabase
     .from('organizations')
-    .update(updates)
-    .eq('user_id', user.id)
+    .upsert({ user_id: user.id, ...updates }, { onConflict: 'user_id' })
     .select()
     .single()
 
   if (error) {
+    console.error('PATCH /api/org error:', error)
     return NextResponse.json(
       { error: 'Kunde inte uppdatera organisation' },
       { status: 500 }

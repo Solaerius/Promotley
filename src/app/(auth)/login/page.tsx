@@ -3,6 +3,10 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { Oswald, Outfit } from 'next/font/google'
+
+const display = Oswald({ subsets: ['latin'], weight: ['600', '700'] })
+const body = Outfit({ subsets: ['latin'], weight: ['400', '500', '600'] })
 
 type AuthMode = 'login' | 'signup'
 
@@ -13,292 +17,243 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
 
   async function handleEmailAuth(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError(null)
-    setSuccessMessage(null)
-
+    setSuccess(null)
     const supabase = createClient()
 
     if (mode === 'login') {
-      const { error: authError } = await supabase.auth.signInWithPassword({ email, password })
-      if (authError) {
-        setError(translateError(authError.message))
-        setLoading(false)
-        return
-      }
+      const { error: err } = await supabase.auth.signInWithPassword({ email, password })
+      if (err) { setError(translateError(err.message)); setLoading(false); return }
       router.push('/')
     } else {
-      const { error: authError } = await supabase.auth.signUp({ email, password })
-      if (authError) {
-        setError(translateError(authError.message))
-        setLoading(false)
-        return
-      }
-      setSuccessMessage('Konto skapat! Kontrollera din e-post för att bekräfta.')
+      const { error: err } = await supabase.auth.signUp({ email, password })
+      if (err) { setError(translateError(err.message)); setLoading(false); return }
+      setSuccess('Konto skapat! Kontrollera din e-post för att bekräfta.')
       setLoading(false)
     }
   }
 
-  async function handleGoogleLogin() {
+  async function handleGoogle() {
     const supabase = createClient()
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: {
-        redirectTo: window.location.origin + '/api/auth/callback',
-      },
+      options: { redirectTo: window.location.origin + '/api/auth/callback' },
     })
   }
 
-  function translateError(message: string): string {
-    if (message.includes('Invalid login credentials')) return 'Fel e-postadress eller lösenord.'
-    if (message.includes('Email not confirmed')) return 'Bekräfta din e-post innan du loggar in.'
-    if (message.includes('User already registered')) return 'Det finns redan ett konto med den e-postadressen.'
-    if (message.includes('Password should be at least')) return 'Lösenordet måste vara minst 6 tecken.'
-    if (message.includes('Unable to validate email address')) return 'Ogiltig e-postadress.'
+  function translateError(msg: string): string {
+    if (msg.includes('Invalid login credentials')) return 'Fel e-postadress eller lösenord.'
+    if (msg.includes('Email not confirmed')) return 'Bekräfta din e-post innan du loggar in.'
+    if (msg.includes('User already registered')) return 'Det finns redan ett konto med den e-postadressen.'
+    if (msg.includes('Password should be at least')) return 'Lösenordet måste vara minst 6 tecken.'
+    if (msg.includes('Unable to validate email')) return 'Ogiltig e-postadress.'
     return 'Något gick fel. Försök igen.'
   }
 
   return (
-    <div
-      style={{
+    <>
+      <style>{`
+        .login-input {
+          width: 100%;
+          padding: 0.7rem 1rem;
+          border-radius: 8px;
+          border: 1px solid rgba(255,255,255,0.12);
+          background: rgba(255,255,255,0.06);
+          color: #fff;
+          font-size: 0.9rem;
+          outline: none;
+          box-sizing: border-box;
+          transition: border-color 0.2s, background 0.2s;
+          font-family: inherit;
+        }
+        .login-input::placeholder { color: rgba(255,255,255,0.3); }
+        .login-input:focus {
+          border-color: rgba(220,38,38,0.7);
+          background: rgba(255,255,255,0.09);
+        }
+        .tab-btn {
+          flex: 1;
+          padding: 0.5rem;
+          border-radius: 6px;
+          border: none;
+          cursor: pointer;
+          font-size: 0.875rem;
+          font-weight: 600;
+          transition: all 0.15s;
+          font-family: inherit;
+        }
+        .tab-active {
+          background: linear-gradient(135deg, #F03333, #CC0000);
+          color: #fff;
+          box-shadow: 0 2px 8px rgba(204,0,0,0.4);
+        }
+        .tab-inactive {
+          background: transparent;
+          color: rgba(255,255,255,0.45);
+        }
+        .tab-inactive:hover { color: rgba(255,255,255,0.75); }
+        .btn-submit {
+          width: 100%;
+          padding: 0.8rem;
+          border-radius: 8px;
+          border: none;
+          cursor: pointer;
+          font-size: 0.9rem;
+          font-weight: 700;
+          font-family: inherit;
+          transition: opacity 0.2s, transform 0.15s;
+          background: linear-gradient(135deg, #F03333, #CC0000);
+          color: #fff;
+          box-shadow: 0 4px 16px rgba(204,0,0,0.35);
+        }
+        .btn-submit:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
+        .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-google {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.75rem;
+          padding: 0.75rem 1.25rem;
+          border-radius: 8px;
+          border: 1px solid rgba(255,255,255,0.14);
+          background: rgba(255,255,255,0.05);
+          color: rgba(255,255,255,0.85);
+          font-size: 0.875rem;
+          font-weight: 600;
+          cursor: pointer;
+          font-family: inherit;
+          transition: background 0.2s, border-color 0.2s;
+        }
+        .btn-google:hover {
+          background: rgba(255,255,255,0.09);
+          border-color: rgba(255,255,255,0.25);
+        }
+      `}</style>
+
+      <div className={body.className} style={{
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #DC2626, #9333EA, #6D28D9)',
+        background: '#070101',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '1rem',
-      }}
-    >
-      <div style={{ width: '100%', maxWidth: '420px' }}>
+        padding: '1.5rem',
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
+        {/* Background glow */}
+        <div style={{
+          position: 'absolute', top: '-15%', left: '-10%',
+          width: 500, height: 500,
+          background: 'radial-gradient(circle, rgba(200,20,20,0.3) 0%, transparent 65%)',
+          pointerEvents: 'none',
+        }} />
+        <div style={{
+          position: 'absolute', bottom: '-15%', right: '-10%',
+          width: 400, height: 400,
+          background: 'radial-gradient(circle, rgba(150,10,10,0.2) 0%, transparent 65%)',
+          pointerEvents: 'none',
+        }} />
 
-        {/* Card */}
-        <div
-          style={{
-            backgroundColor: '#ffffff',
-            borderRadius: '1.25rem',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
-            overflow: 'hidden',
-          }}
-        >
-          {/* Card header — gradient strip */}
-          <div
-            style={{
-              background: 'linear-gradient(135deg, #DC2626, #9333EA, #6D28D9)',
-              padding: '2rem',
-              textAlign: 'center',
-            }}
-          >
-            {/* Logo mark */}
-            <div
-              style={{
-                width: '48px',
-                height: '48px',
-                borderRadius: '0.75rem',
-                backgroundColor: 'rgba(255,255,255,0.2)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: '0.75rem',
-              }}
-            >
-              <svg viewBox="0 0 24 24" style={{ width: '28px', height: '28px', fill: 'white' }} aria-hidden="true">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/>
-              </svg>
+        <div style={{ width: '100%', maxWidth: 420, position: 'relative' }}>
+          {/* Logo */}
+          <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+              <div style={{ width: 32, height: 32, background: 'linear-gradient(135deg, #F03333, #CC0000)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 16px rgba(204,0,0,0.4)' }}>
+                <svg viewBox="0 0 16 16" style={{ width: 16, height: 16, fill: 'white' }}>
+                  <path d="M8 1L1 5v6l7 4 7-4V5L8 1zm0 2.2L13 6.2v3.6L8 12.8 3 9.8V6.2L8 3.2z"/>
+                </svg>
+              </div>
+              <span className={display.className} style={{ color: '#fff', fontSize: '1.5rem', fontWeight: 700, letterSpacing: '0.02em' }}>Promotely</span>
             </div>
-            <div style={{ color: '#ffffff', fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em' }}>
-              Promotely
-            </div>
-            <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
-              AI-marknadsföring för UF-företag
-            </div>
+            <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem' }}>AI-marknadsföring för UF-företag</p>
           </div>
 
-          {/* Card body */}
-          <div style={{ padding: '2rem' }}>
-
-            {/* Mode toggle tabs */}
-            <div
-              style={{
-                display: 'flex',
-                backgroundColor: '#f1f5f9',
-                borderRadius: '0.625rem',
-                padding: '0.25rem',
-                marginBottom: '1.5rem',
-              }}
-            >
-              {(['login', 'signup'] as const).map((m) => (
+          {/* Card */}
+          <div style={{
+            background: 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(255,255,255,0.09)',
+            borderRadius: 16,
+            padding: '2rem',
+            backdropFilter: 'blur(20px)',
+            boxShadow: '0 24px 64px rgba(0,0,0,0.5)',
+          }}>
+            {/* Tabs */}
+            <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: 8, padding: '0.25rem', marginBottom: '1.5rem', gap: '0.25rem' }}>
+              {(['login', 'signup'] as const).map(m => (
                 <button
                   key={m}
                   type="button"
-                  onClick={() => { setMode(m); setError(null); setSuccessMessage(null) }}
-                  style={{
-                    flex: 1,
-                    padding: '0.5rem',
-                    borderRadius: '0.5rem',
-                    border: 'none',
-                    cursor: 'pointer',
-                    fontSize: '0.875rem',
-                    fontWeight: 600,
-                    transition: 'all 0.15s',
-                    backgroundColor: mode === m ? '#ffffff' : 'transparent',
-                    color: mode === m ? '#9333EA' : '#64748b',
-                    boxShadow: mode === m ? '0 1px 4px rgba(0,0,0,0.1)' : 'none',
-                  }}
+                  onClick={() => { setMode(m); setError(null); setSuccess(null) }}
+                  className={`tab-btn ${mode === m ? 'tab-active' : 'tab-inactive'}`}
                 >
                   {m === 'login' ? 'Logga in' : 'Skapa konto'}
                 </button>
               ))}
             </div>
 
-            {/* Email/password form */}
-            <form onSubmit={handleEmailAuth} style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
+            {/* Form */}
+            <form onSubmit={handleEmailAuth} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div>
-                <label
-                  htmlFor="email"
-                  style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#374151', marginBottom: '0.35rem' }}
-                >
+                <label style={{ display: 'block', color: 'rgba(255,255,255,0.6)', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.4rem' }}>
                   E-postadress
                 </label>
                 <input
-                  id="email"
                   type="email"
                   required
                   autoComplete="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={e => setEmail(e.target.value)}
                   placeholder="du@exempel.se"
-                  style={{
-                    width: '100%',
-                    padding: '0.625rem 0.875rem',
-                    borderRadius: '0.5rem',
-                    border: '1.5px solid #e2e8f0',
-                    fontSize: '0.9rem',
-                    outline: 'none',
-                    boxSizing: 'border-box',
-                    color: '#1e293b',
-                  }}
+                  className="login-input"
                 />
               </div>
               <div>
-                <label
-                  htmlFor="password"
-                  style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#374151', marginBottom: '0.35rem' }}
-                >
+                <label style={{ display: 'block', color: 'rgba(255,255,255,0.6)', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.4rem' }}>
                   Lösenord
                 </label>
                 <input
-                  id="password"
                   type="password"
                   required
                   autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={e => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  style={{
-                    width: '100%',
-                    padding: '0.625rem 0.875rem',
-                    borderRadius: '0.5rem',
-                    border: '1.5px solid #e2e8f0',
-                    fontSize: '0.9rem',
-                    outline: 'none',
-                    boxSizing: 'border-box',
-                    color: '#1e293b',
-                  }}
+                  className="login-input"
                 />
               </div>
 
               {error && (
-                <div
-                  style={{
-                    backgroundColor: '#fef2f2',
-                    border: '1px solid #fecaca',
-                    borderRadius: '0.5rem',
-                    padding: '0.625rem 0.875rem',
-                    fontSize: '0.85rem',
-                    color: '#DC2626',
-                  }}
-                >
+                <div style={{ background: 'rgba(220,38,38,0.15)', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 8, padding: '0.625rem 0.875rem', color: '#FF8080', fontSize: '0.85rem' }}>
                   {error}
                 </div>
               )}
-
-              {successMessage && (
-                <div
-                  style={{
-                    backgroundColor: '#f0fdf4',
-                    border: '1px solid #bbf7d0',
-                    borderRadius: '0.5rem',
-                    padding: '0.625rem 0.875rem',
-                    fontSize: '0.85rem',
-                    color: '#15803d',
-                  }}
-                >
-                  {successMessage}
+              {success && (
+                <div style={{ background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.25)', borderRadius: 8, padding: '0.625rem 0.875rem', color: '#4ade80', fontSize: '0.85rem' }}>
+                  {success}
                 </div>
               )}
 
-              <button
-                type="submit"
-                disabled={loading}
-                style={{
-                  width: '100%',
-                  padding: '0.75rem',
-                  borderRadius: '0.625rem',
-                  border: 'none',
-                  cursor: loading ? 'not-allowed' : 'pointer',
-                  background: loading
-                    ? '#c4b5fd'
-                    : 'linear-gradient(135deg, #DC2626, #9333EA)',
-                  color: '#ffffff',
-                  fontWeight: 700,
-                  fontSize: '0.9rem',
-                  transition: 'opacity 0.15s',
-                }}
-              >
+              <button type="submit" disabled={loading} className="btn-submit" style={{ marginTop: '0.25rem' }}>
                 {loading ? 'Laddar...' : mode === 'login' ? 'Logga in' : 'Skapa konto'}
               </button>
             </form>
 
             {/* Divider */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.75rem',
-                margin: '1.25rem 0',
-              }}
-            >
-              <div style={{ flex: 1, height: '1px', backgroundColor: '#e2e8f0' }} />
-              <span style={{ fontSize: '0.8rem', color: '#94a3b8', whiteSpace: 'nowrap' }}>— eller —</span>
-              <div style={{ flex: 1, height: '1px', backgroundColor: '#e2e8f0' }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', margin: '1.25rem 0' }}>
+              <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.08)' }} />
+              <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.75rem' }}>eller</span>
+              <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.08)' }} />
             </div>
 
-            {/* Google button */}
-            <button
-              onClick={handleGoogleLogin}
-              type="button"
-              style={{
-                width: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.75rem',
-                padding: '0.7rem 1.25rem',
-                borderRadius: '0.625rem',
-                border: '1.5px solid #e2e8f0',
-                backgroundColor: '#ffffff',
-                color: '#374151',
-                fontSize: '0.875rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
-              }}
-            >
-              <svg viewBox="0 0 24 24" style={{ width: '20px', height: '20px', flexShrink: 0 }} aria-hidden="true">
+            {/* Google */}
+            <button onClick={handleGoogle} type="button" className="btn-google">
+              <svg viewBox="0 0 24 24" style={{ width: 18, height: 18, flexShrink: 0 }}>
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                 <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                 <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
@@ -306,22 +261,16 @@ export default function LoginPage() {
               </svg>
               Fortsätt med Google
             </button>
-
-            {/* Footer note */}
-            <p style={{ textAlign: 'center', fontSize: '0.75rem', color: '#94a3b8', marginTop: '1.5rem', lineHeight: 1.5 }}>
-              Från UF till UF — byggt av ett UF-företag för UF-företag
-            </p>
           </div>
-        </div>
 
-        {/* Sub-footer */}
-        <p style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', lineHeight: 1.5 }}>
-          Genom att logga in godkänner du våra{' '}
-          <span style={{ textDecoration: 'underline', cursor: 'pointer' }}>användarvillkor</span>
-          {' '}och{' '}
-          <span style={{ textDecoration: 'underline', cursor: 'pointer' }}>integritetspolicy</span>.
-        </p>
+          <p style={{ textAlign: 'center', marginTop: '1.5rem', color: 'rgba(255,255,255,0.25)', fontSize: '0.75rem', lineHeight: 1.5 }}>
+            Genom att logga in godkänner du våra användarvillkor och integritetspolicy.
+          </p>
+          <p style={{ textAlign: 'center', marginTop: '0.75rem', color: 'rgba(255,255,255,0.25)', fontSize: '0.75rem' }}>
+            Från UF till UF — byggt av ett UF-företag för UF-företag
+          </p>
+        </div>
       </div>
-    </div>
+    </>
   )
 }
